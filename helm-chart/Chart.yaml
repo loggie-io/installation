@@ -1,0 +1,12 @@
+apiVersion: v2
+description: A Helm chart for Loggie
+name: loggie
+type: application
+# This is the chart version. This version number should be incremented each time you make changes
+# to the chart and its templates, including the app version.
+version: v0.1.0
+
+# This is the version number of the application being deployed. This version number should be
+# incremented each time you make changes to the application.
+appVersion: v0.1.0
+

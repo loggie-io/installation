@@ -1,0 +1,85 @@
+
+image: hub.c.163.com/qingzhou/loggie:latest
+
+resources:
+  limits:
+    cpu: 2
+    memory: 2Gi
+  requests:
+    cpu: 100m
+    memory: 100Mi
+
+extraArgs: {}
+  # log.level: debug
+  # log.jsonFormat: false
+
+extraVolumeMounts:
+  - mountPath: /data/
+    name: data
+  - mountPath: /var/log/pods
+    name: podlogs
+
+extraVolumes:
+  - hostPath:
+      path: /data/
+      type: DirectoryOrCreate
+    name: data
+  - hostPath:
+      path: /var/log/pods
+      type: DirectoryOrCreate
+    name: podlogs
+
+
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+nodeSelector: {}
+
+## Affinity for pod assignment
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+affinity: {}
+# podAntiAffinity:
+#   requiredDuringSchedulingIgnoredDuringExecution:
+#   - labelSelector:
+#       matchExpressions:
+#       - key: app
+#         operator: In
+#         values:
+#         - loggie
+#     topologyKey: "kubernetes.io/hostname"
+
+## Tolerations for pod assignment
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
+# - effect: NoExecute
+#   operator: Exists
+# - effect: NoSchedule
+#   operator: Exists
+
+updateStrategy:
+  type: RollingUpdate
+
+config:
+  loggie:
+    reload:
+      enabled: true
+      period: 10s
+    monitor:
+      logger:
+        period: 30s
+        enabled: true
+      listeners:
+        filesource: ~
+        filewatcher: ~
+        reload: ~
+        sink: ~
+    discovery:
+      enabled: true
+      kubernetes:
+        fields:
+          container.name: containername
+          logConfig: logconfig
+          namespace: namespace
+          node.name: nodename
+          pod.name: podname
+    http:
+      enabled: true
+      port: 9196
