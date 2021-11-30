@@ -15,15 +15,15 @@ rules:
       - list
   - apiGroups:
     - ""
-  resources:
-    - events
-  verbs:
-    - get
-    - watch
-    - list
-    - update
-    - create
-    - patch
+    resources:
+      - events
+    verbs:
+      - get
+      - watch
+      - list
+      - update
+      - create
+      - patch
   - apiGroups:
     - extensions
     - apps
