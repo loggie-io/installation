@@ -117,6 +117,5 @@ config:
 servicePorts:
   - name: monitor
     port: 9196
-    protocol: http
     targetPort: 9196
   
