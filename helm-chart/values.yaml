@@ -14,14 +14,12 @@ extraArgs: {}
   # log.jsonFormat: false
 
 extraVolumeMounts:
-  - mountPath: /data/
-    name: data
   - mountPath: /var/log/pods
     name: podlogs
 
 extraVolumes:
   - hostPath:
-      path: /data/
+      path: /data/loggie
       type: DirectoryOrCreate
     name: data
   - hostPath:
@@ -57,6 +55,7 @@ tolerations: []
 updateStrategy:
   type: RollingUpdate
 
+## Agent global config
 config:
   loggie:
     reload:
@@ -83,3 +82,24 @@ config:
     http:
       enabled: true
       port: 9196
+
+## Aggregator global config
+# config:
+#   loggie:
+#     reload:
+#       enabled: true
+#       period: 10s
+#     monitor:
+#       logger:
+#         period: 30s
+#         enabled: true
+#       listeners:
+#         reload: ~
+#         sink: ~
+#     discovery:
+#       enabled: true
+#       kubernetes:
+#         cluster: aggregator
+#     http:
+#       enabled: true
+#       port: 9196
