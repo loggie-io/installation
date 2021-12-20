@@ -43,8 +43,8 @@ spec:
             - mountPath: /opt/loggie/loggie.yml
               name: loggie-config
               subPath: loggie.yml
-            - mountPath: /opt/loggie/pipeline
-              name: pipeline-config
+            - mountPath: /data/
+              name: registry
 
       serviceAccountName: {{ template "loggie.name" . }}
       nodeSelector:
@@ -62,8 +62,8 @@ spec:
             name: loggie-config-{{ template "loggie.name" . }}
           name: loggie-config
         - hostPath:
-            path: /opt/loggie/pipeline
+            path: /data/loggie-{{ template "loggie.name" . }}
             type: DirectoryOrCreate
-          name: pipeline-config
+          name: registry
   updateStrategy:
     {{- toYaml .Values.updateStrategy | nindent 4 }}
