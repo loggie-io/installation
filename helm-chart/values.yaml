@@ -24,10 +24,6 @@ extraVolumeMounts:
 
 extraVolumes:
   - hostPath:
-      path: /data/loggie
-      type: DirectoryOrCreate
-    name: data
-  - hostPath:
       path: /var/log/pods
       type: DirectoryOrCreate
     name: podlogs
