@@ -68,6 +68,6 @@ spec:
             type: DirectoryOrCreate
           name: registry
         - emptyDir: {}
-        name: pipeline
+          name: pipeline
   updateStrategy:
     {{- toYaml .Values.updateStrategy | nindent 4 }}

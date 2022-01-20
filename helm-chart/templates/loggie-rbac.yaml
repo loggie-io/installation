@@ -38,6 +38,8 @@ rules:
     resources:
       - logconfigs
       - logconfigs/status
+      - clusterlogconfigs
+      - clusterlogconfigs/status
       - sinks
       - interceptors
     verbs:
