@@ -82,6 +82,7 @@ config:
     discovery:
       enabled: true
       kubernetes:
+        containerRuntime: containerd
         fields:
           container.name: containername
           logConfig: logconfig
