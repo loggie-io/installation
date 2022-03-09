@@ -1,5 +1,5 @@
 
-image: hub.c.163.com/qingzhou/loggie:latest
+image: hub.c.163.com/loggie/loggie:v1.0.0
 
 resources:
   limits:
