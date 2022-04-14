@@ -1,5 +1,5 @@
 
-image: hub.c.163.com/loggie/loggie:v1.0.0
+image: hub.c.163.com/loggie/loggie:v1.1.0
 
 resources:
   limits:
@@ -79,6 +79,9 @@ config:
         filewatcher: ~
         reload: ~
         sink: ~
+        queue: ~
+        pipeline: ~
+
     discovery:
       enabled: true
       kubernetes:
