@@ -1,4 +1,3 @@
-
 image: hub.c.163.com/loggie/loggie:v1.1.0
 
 resources:
@@ -21,7 +20,6 @@ extraVolumeMounts:
   - mountPath: /var/lib/docker
     name: docker
 
-
 extraVolumes:
   - hostPath:
       path: /var/log/pods
@@ -36,6 +34,7 @@ extraVolumes:
       type: DirectoryOrCreate
     name: docker
 
+extraEnvs: {}
 
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
 nodeSelector: {}
@@ -122,4 +121,12 @@ servicePorts:
   - name: monitor
     port: 9196
     targetPort: 9196
-  
+
+serviceMonitor:
+  enabled: true
+  ## Scrape interval. If not set, the Prometheus default scrape interval is used.
+  ##
+  interval: 30s
+  relabelings: []
+  metricRelabelings: []
+
