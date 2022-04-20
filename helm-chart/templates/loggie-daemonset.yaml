@@ -32,6 +32,10 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
+          {{- range $key, $value := .Values.extraEnvs }}
+            - name: {{ $key }}
+              value: {{ $value }}
+          {{- end }}
           image: {{ .Values.image }}
           name: loggie
           resources:
