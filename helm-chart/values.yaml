@@ -123,7 +123,7 @@ servicePorts:
     targetPort: 9196
 
 serviceMonitor:
-  enabled: true
+  enabled: false
   ## Scrape interval. If not set, the Prometheus default scrape interval is used.
   ##
   interval: 30s
