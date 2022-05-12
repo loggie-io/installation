@@ -32,6 +32,8 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
+            - name: TZ
+              value: {{.Values.timezone }}
           {{- range $key, $value := .Values.extraEnvs }}
             - name: {{ $key }}
               value: {{ $value }}

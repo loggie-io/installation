@@ -35,6 +35,7 @@ extraVolumes:
     name: docker
 
 extraEnvs: {}
+timezone: Asia/Shanghai
 
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
 nodeSelector: {}
