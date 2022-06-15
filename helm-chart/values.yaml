@@ -81,7 +81,7 @@ config:
       kubernetes:
         containerRuntime: containerd
         rootFsCollectionEnabled: false
-        parseStdout: true
+        parseStdout: false
         k8sFields: 
           logconfig: "${_k8s.logconfig}"
           namespace: "${_k8s.pod.namespace}"
