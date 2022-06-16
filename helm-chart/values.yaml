@@ -1,4 +1,4 @@
-image: hub.c.163.com/loggie/loggie:v1.1.0
+image: loggieio/loggie:v1.2.0
 
 resources:
   limits:
@@ -10,15 +10,13 @@ resources:
 
 extraArgs: {}
   # log.level: debug
-  # log.jsonFormat: false
+  # log.jsonFormat: true
 
 extraVolumeMounts:
   - mountPath: /var/log/pods
     name: podlogs
   - mountPath: /var/lib/kubelet/pods
     name: kubelet
-  - mountPath: /var/lib/docker
-    name: docker
 
 extraVolumes:
   - hostPath:
@@ -29,10 +27,6 @@ extraVolumes:
       path: /var/lib/kubelet/pods
       type: DirectoryOrCreate
     name: kubelet
-  - hostPath:
-      path: /var/lib/docker
-      type: DirectoryOrCreate
-    name: docker
 
 extraEnvs: {}
 timezone: Asia/Shanghai
@@ -86,12 +80,15 @@ config:
       enabled: true
       kubernetes:
         containerRuntime: containerd
-        fields:
-          container.name: containername
-          logConfig: logconfig
-          namespace: namespace
-          node.name: nodename
-          pod.name: podname
+        rootFsCollectionEnabled: false
+        parseStdout: false
+        k8sFields: 
+          logconfig: "${_k8s.logconfig}"
+          namespace: "${_k8s.pod.namespace}"
+          nodename: "${_k8s.node.name}"
+          podname: "${_k8s.pod.name}"
+          containername: "${_k8s.pod.container.name}"
+          
     http:
       enabled: true
       port: 9196
@@ -126,7 +123,6 @@ servicePorts:
 serviceMonitor:
   enabled: false
   ## Scrape interval. If not set, the Prometheus default scrape interval is used.
-  ##
   interval: 30s
   relabelings: []
   metricRelabelings: []

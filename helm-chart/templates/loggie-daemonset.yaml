@@ -53,6 +53,19 @@ spec:
               name: pipeline
             - mountPath: /data/
               name: registry
+            {{- if eq .Values.config.loggie.discovery.kubernetes.rootFsCollectionEnabled true }}
+            {{- if eq .Values.config.loggie.discovery.kubernetes.containerRuntime "docker" }}
+            - mountPath: /var/run/docker.sock
+              name: dockersocket
+            - mountPath: /var/lib/docker
+              mountPropagation: HostToContainer
+              name: docker
+            {{- end }}
+            {{- if eq .Values.config.loggie.discovery.kubernetes.containerRuntime "containerd" }}
+            - mountPath: /run/containerd/containerd.sock
+              name: containerdsocket
+            {{- end }}
+            {{- end }}
 
       serviceAccountName: {{ template "loggie.name" . }}
       nodeSelector:
@@ -75,5 +88,30 @@ spec:
           name: registry
         - emptyDir: {}
           name: pipeline
+        {{- if eq .Values.config.loggie.discovery.kubernetes.rootFsCollectionEnabled true }}
+        {{- if eq .Values.config.loggie.discovery.kubernetes.containerRuntime "docker" }}
+        - hostPath:
+            path: /var/run/docker.sock
+            type: ""
+          name: dockersocket
+        - hostPath:
+            path: /var/lib/docker
+            type: DirectoryOrCreate
+          name: docker
+        {{- end }}
+        {{- if eq .Values.config.loggie.discovery.kubernetes.containerRuntime "containerd" }}
+        - hostPath:
+            path: /run/containerd/containerd.sock
+            type: ""
+          name: containerdsocket
+        {{- end }}
+        {{- end }}
+
+      {{- if eq .Values.config.loggie.discovery.kubernetes.rootFsCollectionEnabled true }}
+      {{- if eq .Values.config.loggie.discovery.kubernetes.containerRuntime "containerd" }}
+      hostPID: true  
+      {{- end }}
+      {{- end }}
+
   updateStrategy:
     {{- toYaml .Values.updateStrategy | nindent 4 }}
