@@ -64,7 +64,7 @@ tolerations: []
 updateStrategy:
   type: RollingUpdate
 
-## Agent global config
+## Agent mode, ignored when aggregator.enabled is true
 config:
   loggie:
     reload:
@@ -99,26 +99,29 @@ config:
       enabled: true
       port: 9196
 
-## Aggregator global config
-# config:
-#   loggie:
-#     reload:
-#       enabled: true
-#       period: 10s
-#     monitor:
-#       logger:
-#         period: 30s
-#         enabled: true
-#       listeners:
-#         reload: ~
-#         sink: ~
-#     discovery:
-#       enabled: true
-#       kubernetes:
-#         cluster: aggregator
-#     http:
-#       enabled: true
-#       port: 9196
+## Aggregator mode, by default is disabled
+aggregator:
+  enabled: false
+  replicas: 2
+  config:
+    loggie:
+      reload:
+        enabled: true
+        period: 10s
+      monitor:
+        logger:
+          period: 30s
+          enabled: true
+        listeners:
+          reload: ~
+          sink: ~
+      discovery:
+        enabled: true
+        kubernetes:
+          cluster: aggregator
+      http:
+        enabled: true
+        port: 9196
 
 
 servicePorts:

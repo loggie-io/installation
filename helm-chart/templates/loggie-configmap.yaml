@@ -2,7 +2,11 @@
 apiVersion: v1
 data:
   loggie.yml: |-
+    {{- if .Values.aggregator.enabled }}
+    {{- toYaml .Values.aggregator.config | nindent 4 }}
+    {{- else }}
     {{- toYaml .Values.config | nindent 4 }}
+    {{- end }}
 kind: ConfigMap
 metadata:
   name: loggie-config-{{ template "loggie.name" . }}

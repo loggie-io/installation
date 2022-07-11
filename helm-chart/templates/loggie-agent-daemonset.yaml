@@ -1,0 +1,120 @@
+{{- if .Values.aggregator.enabled }}
+# Do not create DaemonSet in Aggregator mode
+{{- else }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: loggie
+    instance: {{ template "loggie.name" . }}
+  name: {{ template "loggie.name" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: loggie
+      instance: {{ template "loggie.name" . }}
+  template:
+    metadata:
+      labels:
+        app: loggie
+        instance: {{ template "loggie.name" . }}
+    spec:
+      containers:
+        - args:
+            - -meta.nodeName=$(HOST_NAME)
+            - -config.system=/opt/loggie/loggie.yml
+            - -config.pipeline=/opt/loggie/pipeline/*.yml
+          {{- range $key, $value := .Values.extraArgs }}
+            - -{{ $key }}={{ $value }}
+          {{- end }}
+          env:
+            - name: HOST_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: TZ
+              value: {{.Values.timezone }}
+          {{- range $key, $value := .Values.extraEnvs }}
+            - name: {{ $key }}
+              value: {{ $value }}
+          {{- end }}
+          image: {{ .Values.image }}
+          name: loggie
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{- if .Values.extraVolumeMounts }}
+              {{ toYaml .Values.extraVolumeMounts | nindent 12}}
+            {{- end }}
+            - mountPath: /opt/loggie/loggie.yml
+              name: loggie-config
+              subPath: loggie.yml
+            - mountPath: /opt/loggie/pipeline
+              name: pipeline
+            - mountPath: /data/
+              name: registry
+            {{- if eq .Values.config.loggie.discovery.kubernetes.rootFsCollectionEnabled true }}
+            {{- if eq .Values.config.loggie.discovery.kubernetes.containerRuntime "docker" }}
+            - mountPath: /var/run/docker.sock
+              name: dockersocket
+            - mountPath: /var/lib/docker
+              mountPropagation: HostToContainer
+              name: docker
+            {{- end }}
+            {{- if eq .Values.config.loggie.discovery.kubernetes.containerRuntime "containerd" }}
+            - mountPath: /run/containerd/containerd.sock
+              name: containerdsocket
+            {{- end }}
+            {{- end }}
+
+      serviceAccountName: {{ template "loggie.name" . }}
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      volumes:
+{{- if .Values.extraVolumes }}
+{{ toYaml .Values.extraVolumes | indent 8}}
+{{- end }}
+        - configMap:
+            defaultMode: 384
+            name: loggie-config-{{ template "loggie.name" . }}
+          name: loggie-config
+        - hostPath:
+            path: /data/loggie-{{ template "loggie.name" . }}
+            type: DirectoryOrCreate
+          name: registry
+        - emptyDir: {}
+          name: pipeline
+        {{- if eq .Values.config.loggie.discovery.kubernetes.rootFsCollectionEnabled true }}
+        {{- if eq .Values.config.loggie.discovery.kubernetes.containerRuntime "docker" }}
+        - hostPath:
+            path: /var/run/docker.sock
+            type: ""
+          name: dockersocket
+        - hostPath:
+            path: /var/lib/docker
+            type: DirectoryOrCreate
+          name: docker
+        {{- end }}
+        {{- if eq .Values.config.loggie.discovery.kubernetes.containerRuntime "containerd" }}
+        - hostPath:
+            path: /run/containerd/containerd.sock
+            type: ""
+          name: containerdsocket
+        {{- end }}
+        {{- end }}
+
+      {{- if eq .Values.config.loggie.discovery.kubernetes.rootFsCollectionEnabled true }}
+      {{- if eq .Values.config.loggie.discovery.kubernetes.containerRuntime "containerd" }}
+      hostPID: true  
+      {{- end }}
+      {{- end }}
+
+  updateStrategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
+{{- end }}
