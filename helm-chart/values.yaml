@@ -75,12 +75,18 @@ config:
         period: 30s
         enabled: true
       listeners:
-        filesource: ~
-        filewatcher: ~
-        reload: ~
-        sink: ~
-        queue: ~
-        pipeline: ~
+        filesource:
+          period: 10s
+        filewatcher:
+          period: 5m
+        reload:
+          period: 10s
+        sink:
+          period: 10s
+        queue:
+          period: 10s
+        pipeline:
+          period: 10s
 
     discovery:
       enabled: true
@@ -88,13 +94,13 @@ config:
         containerRuntime: containerd
         rootFsCollectionEnabled: false
         parseStdout: false
-        k8sFields: 
+        k8sFields:
           logconfig: "${_k8s.logconfig}"
           namespace: "${_k8s.pod.namespace}"
           nodename: "${_k8s.node.name}"
           podname: "${_k8s.pod.name}"
           containername: "${_k8s.pod.container.name}"
-          
+
     http:
       enabled: true
       port: 9196
@@ -113,8 +119,10 @@ aggregator:
           period: 30s
           enabled: true
         listeners:
-          reload: ~
-          sink: ~
+          reload:
+            period: 10s
+          sink:
+            period: 10s
       discovery:
         enabled: true
         kubernetes:
