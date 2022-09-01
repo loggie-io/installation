@@ -1,4 +1,4 @@
-image: loggieio/loggie:v1.2.3
+image: loggieio/loggie:v1.3.0-rc.0
 
 resources:
   limits:
@@ -91,10 +91,17 @@ config:
     discovery:
       enabled: true
       kubernetes:
+        # Choose: docker or containerd
         containerRuntime: containerd
+        # Collect log files inside the container from the root filesystem of the container, no need to mount the volume
         rootFsCollectionEnabled: false
+        # Automatically parse and convert the wrapped container standard output format into the original log content
         parseStdout: false
-        k8sFields:
+        # If set to true, it means that the pipeline configuration generated does not contain specific Pod paths and meta information,
+        # and these data will be dynamically obtained by the file source, thereby reducing the number of configuration changes and reloads.
+        dynamicContainerLog: false
+        # Automatically add fields when selector.type is pod in logconfig/clusterlogconfig
+        typePodFields:
           logconfig: "${_k8s.logconfig}"
           namespace: "${_k8s.pod.namespace}"
           nodename: "${_k8s.node.name}"
