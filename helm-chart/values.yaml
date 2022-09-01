@@ -98,7 +98,7 @@ config:
         # Automatically parse and convert the wrapped container standard output format into the original log content
         parseStdout: false
         # If set to true, it means that the pipeline configuration generated does not contain specific Pod paths and meta information,
-	      # and these data will be dynamically obtained by the file source, thereby reducing the number of configuration changes and reloads.
+        # and these data will be dynamically obtained by the file source, thereby reducing the number of configuration changes and reloads.
         dynamicContainerLog: false
         # Automatically add fields when selector.type is pod in logconfig/clusterlogconfig
         typePodFields:
