@@ -134,6 +134,7 @@ aggregator:
         enabled: true
         kubernetes:
           cluster: aggregator
+          containerRuntime: none
       http:
         enabled: true
         port: 9196
