@@ -65,6 +65,8 @@ spec:
                     type: string
                   sources:
                     type: string
+                  queue:
+                    type: string
                 type: object
               selector:
                 properties:
@@ -160,6 +162,8 @@ spec:
                     sinkRef:
                       type: string
                     sources:
+                      type: string
+                    queue:
                       type: string
                   type: object
                 selector:
