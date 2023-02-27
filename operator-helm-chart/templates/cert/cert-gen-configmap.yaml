@@ -1,0 +1,147 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loggie-operator-cert-gen-{{ template "operator.name" . }}
+  namespace: {{ .Release.Namespace }}
+data:
+  generate_cert.sh: |
+    #!/bin/bash
+    
+    set -e
+    
+    CERT_DIR="/tmp/cert"
+    SERVER_PORT=9443
+    SECRET=loggie-operator-webhook
+    NAMESPACE=loggie
+    
+    usage() {
+      cat <<EOF
+    usage: ${0} [OPTIONS]
+    The following flags are required.
+        --hostname         To deploy in Kubernetes, please use {serviceName}.{namespace}.svc;
+                              locally, please use the IP address where the Loggie operator is running locally.
+    
+    The following flags are optional.
+        --namespace        Namespace where webhook service and secret reside. defaults: loggie
+        --secret           Secret name for CA certificate and server certificate/key pair. defaults: loggie-webhook
+        --cert-dir         The directory where the certificate is stored. defaults: "/tmp/cert"
+        --server-port      Server Port. defaults: 9443
+    EOF
+      exit 1
+    }
+    
+    while [ $# -gt 0 ]; do
+      case ${1} in
+          --hostname)
+              HOST_NAME="$2"
+              shift
+              ;;
+          --namespace)
+              NAMESPACE="$2"
+              shift
+              ;;
+          --secret)
+              SECRET="$2"
+              shift
+              ;;
+          --cert-dir)
+              CERT_DIR="$2"
+              shift
+              ;;
+          --server-port)
+              SERVER_PORT="$2"
+              shift
+              ;;
+
+          *)
+              usage
+              ;;
+      esac
+      shift
+    done
+    
+    [ -z "${HOST_NAME}" ] && echo "ERROR: --hostname flag is required" && exit 1
+    
+    
+    mkdir -p ${CERT_DIR}
+    cd ${CERT_DIR}
+    cat > ca-config.json <<EOF
+    {
+      "signing": {
+        "default": {
+          "expiry": "87600h"
+        },
+        "profiles": {
+          "server": {
+            "usages": ["signing", "key encipherment", "server auth", "client auth"],
+            "expiry": "87600h"
+          }
+        }
+      }
+    }
+    EOF
+    
+    cat > ca-csr.json <<EOF
+    {
+      "CN": "Kubernetes",
+      "key": {
+        "algo": "rsa",
+        "size": 2048
+      },
+      "names": [
+        {
+          "C": "China",
+          "L": "Hangzhou",
+          "O": "Kubernetes",
+          "OU": "Kubernetes",
+          "ST": "Oregon"
+        }
+      ]
+    }
+    EOF
+    
+    cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+    
+    cat > server-csr.json <<EOF
+    {
+      "CN": "admission",
+      "key": {
+        "algo": "rsa",
+        "size": 2048
+      },
+      "names": [
+        {
+          "C": "China",
+          "L": "Hangzhou",
+          "O": "Kubernetes",
+          "OU": "Kubernetes",
+          "ST": "Oregon"
+        }
+      ]
+    }
+    EOF
+    
+    cfssl gencert \
+      -ca=ca.pem \
+      -ca-key=ca-key.pem \
+      -config=ca-config.json \
+      -hostname=${HOST_NAME} \
+      -profile=server \
+      server-csr.json | cfssljson -bare server
+        
+    # create the secret with CA cert and server cert/key
+    kubectl create secret tls "${SECRET}" \
+          --key="${CERT_DIR}/server-key.pem" \
+          --cert="${CERT_DIR}/server.pem" \
+          --dry-run=client -o yaml |
+      kubectl -n "${NAMESPACE}" apply -f -
+
+    while true; do
+      echo "INFO: Trying to patch webhook adding the caBundle."
+      if kubectl patch "${kind:-mutatingwebhookconfiguration}" 'loggie-operator-webhook-{{ template "operator.name" . }}' --type='json' -p "[{'op': 'add', 'path': '/webhooks/0/clientConfig/caBundle', 'value':'$(cat ca.pem | base64 -w0)'}]"; then
+        break
+      fi
+      echo "INFO: webhook not patched. Retrying in 5s..."
+      sleep 5
+    done

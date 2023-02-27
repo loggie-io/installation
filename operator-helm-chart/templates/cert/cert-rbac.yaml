@@ -1,0 +1,33 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: loggie-operator-cert-role-{{ template "operator.name" . }}
+rules:
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations"]
+    verbs: ["create", "update", "get", "list", "patch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["create", "update", "get", "list", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: loggie-operator-cert-rolebinding-{{ template "operator.name" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: loggie-operator-cert-role-{{ template "operator.name" . }}
+subjects:
+  - kind: ServiceAccount
+    name: loggie-operator-cert-{{ template "operator.name" . }}
+    namespace: {{ .Release.Namespace }}
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: loggie-operator-cert-{{ template "operator.name" . }}
+  namespace: {{ .Release.Namespace }}
