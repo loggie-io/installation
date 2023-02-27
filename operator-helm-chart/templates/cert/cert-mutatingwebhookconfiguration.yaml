@@ -1,0 +1,37 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: loggie-operator-webhook-{{ template "operator.name" . }}
+webhooks:
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        namespace: {{ .Release.Namespace }}
+        name: {{ template "operator.name" . }}
+        path: /mutate-inject-sidecar
+        port: 9443
+    failurePolicy: Ignore
+    matchPolicy: Equivalent
+    name: sidecar-injector-webhook.loggie.io
+    namespaceSelector: {}
+    objectSelector:
+      matchExpressions:
+      - key: sidecar.loggie.io/inject
+        operator: NotIn
+        values:
+        - "false"
+
+    rules:
+      - apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - pods
+        scope: '*'
+    sideEffects: None
+    timeoutSeconds: 3

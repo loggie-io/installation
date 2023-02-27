@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: loggie-operator-webhook-cert-setup-{{ template "operator.name" . }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-delete-policy": before-hook-creation
+
+spec:
+  template:
+    spec:
+      serviceAccountName: loggie-operator-cert-{{ template "operator.name" . }}
+      containers:
+      - name: webhook-cert-setup
+        env:
+        - name: TZ
+          value: {{ .Values.timezone }}
+        image: {{ .Values.image.certSetup }}
+        command: ["./opt/generate_cert.sh"]
+        args:
+          - "--hostname"
+          - {{ template "operator.name" . }}.{{ .Release.Namespace }}.svc
+          - "--namespace"
+          - {{ .Release.Namespace }}
+          - "--secret"
+          - loggie-operator-webhook-{{ template "operator.name" . }}
+        volumeMounts:
+        - name: gen-cert
+          mountPath: /opt/generate_cert.sh
+          subPath: generate_cert.sh
+        resources:
+          limits:
+            cpu: 1
+            memory: 100Mi
+          requests:
+            cpu: 0.5
+            memory: 50Mi
+      restartPolicy: OnFailure
+      volumes:
+      - name: gen-cert
+        configMap:
+          name: loggie-operator-cert-gen-{{ template "operator.name" . }}
+          items:
+          - key: generate_cert.sh
+            path: generate_cert.sh
+            mode: 0755
+
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+  backoffLimit: 3

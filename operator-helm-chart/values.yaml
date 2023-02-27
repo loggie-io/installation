@@ -1,0 +1,58 @@
+image: 
+  certSetup: loggieio/operator-webhook-cert-setup:v1.0.0
+  operator: docker.io/loggieio/loggie-operator:main-0af197d
+
+resources:
+  limits:
+    cpu: 2
+    memory: 2Gi
+  requests:
+    cpu: 100m
+    memory: 100Mi
+
+extraArgs: {}
+
+timezone: Asia/Shanghai
+
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+nodeSelector: {}
+
+## Affinity for pod assignment
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+affinity: {}
+# podAntiAffinity:
+#   requiredDuringSchedulingIgnoredDuringExecution:
+#   - labelSelector:
+#       matchExpressions:
+#       - key: app
+#         operator: In
+#         values:
+#         - loggie
+#     topologyKey: "kubernetes.io/hostname"
+
+## Tolerations for pod assignment
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
+# - effect: NoExecute
+#   operator: Exists
+# - effect: NoSchedule
+#   operator: Exists
+
+## operator config content
+config:
+  sidecar:
+    enabled: true
+    image: loggieio/loggie:main-1a321f3
+    systemConfig: |
+      loggie:
+        monitor:
+          logger:
+            period: 30s
+            enabled: true
+          listeners:
+            filesource: ~
+            reload: ~
+            sink: ~
+            queue: ~
+        http:
+          enabled: true

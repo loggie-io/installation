@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: loggie-operator
+  name: {{ template "operator.name" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: loggie-operator
+  template:
+    metadata:
+      labels:
+        app: loggie-operator
+    spec:
+      containers:
+      - args:
+        - -cert-dir=/tmp/cert
+        - -config-path=/etc/config.yml
+        - -leader-elect=true
+        {{- range $key, $value := .Values.extraArgs }}
+          - -{{ $key }}={{ $value }}
+        {{- end }}
+        image: {{ .Values.image.operator }}
+        env:
+        - name: TZ
+          value: {{ .Values.timezone }}
+        name: operator
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        volumeMounts:
+        - mountPath: /etc/config.yml
+          name: config
+          subPath: config.yml
+        - name: cert
+          mountPath: "/tmp/cert"
+
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      serviceAccountName: loggie-operator-{{ template "operator.name" . }}
+      volumes:
+      - name: config
+        configMap:
+          name: loggie-operator-config-{{ template "operator.name" . }}
+      - name: cert
+        secret:
+         secretName: loggie-operator-webhook-{{ template "operator.name" . }}
