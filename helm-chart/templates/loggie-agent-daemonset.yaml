@@ -64,8 +64,9 @@ spec:
               name: docker
             {{- end }}
             {{- if eq .Values.config.loggie.discovery.kubernetes.containerRuntime "containerd" }}
-            - mountPath: /run/containerd/containerd.sock
-              name: containerdsocket
+            - mountPath: /run/
+              mountPropagation: HostToContainer
+              name: hostrun
             {{- end }}
             {{- end }}
 
@@ -103,9 +104,9 @@ spec:
         {{- end }}
         {{- if eq .Values.config.loggie.discovery.kubernetes.containerRuntime "containerd" }}
         - hostPath:
-            path: /run/containerd/containerd.sock
+            path: /run
             type: ""
-          name: containerdsocket
+          name: hostrun
         {{- end }}
         {{- end }}
 
