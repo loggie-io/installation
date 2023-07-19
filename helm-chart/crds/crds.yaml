@@ -170,6 +170,8 @@ spec:
                   properties:
                     cluster:
                       type: string
+                    service:
+                      type: string
                     labelSelector:
                       additionalProperties:
                         type: string
