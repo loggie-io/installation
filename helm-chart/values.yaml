@@ -19,6 +19,9 @@ extraVolumeMounts:
     name: dockercontainers
   - mountPath: /var/lib/kubelet/pods
     name: kubelet
+  - mountPath: /hostroot
+    name: hostroot
+
 
 extraVolumes:
   - hostPath:
@@ -33,6 +36,10 @@ extraVolumes:
       path: /var/lib/kubelet/pods
       type: DirectoryOrCreate
     name: kubelet
+  - hostPath:
+      path: /
+      type: DirectoryOrCreate
+    name: hostroot
 
 extraEnvs: {}
 timezone: Asia/Shanghai
@@ -100,6 +107,8 @@ config:
         # If set to true, it means that the pipeline configuration generated does not contain specific Pod paths and meta information,
         # and these data will be dynamically obtained by the file source, thereby reducing the number of configuration changes and reloads.
         dynamicContainerLog: false
+        # Specify path where root of host mounts
+        hostRootMountPath: /hostroot
         # Automatically add fields when selector.type is pod in logconfig/clusterlogconfig
         typePodFields:
           logconfig: "${_k8s.logconfig}"
