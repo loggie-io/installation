@@ -44,6 +44,12 @@ spec:
           name: loggie
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          {{- if eq .Values.config.loggie.discovery.kubernetes.rootFsCollectionEnabled true }}
+          {{- if eq .Values.config.loggie.discovery.kubernetes.containerRuntime "containerd" }}
+          securityContext:
+            privileged: true
+          {{- end }}
+          {{- end }}
           volumeMounts:
             {{- if .Values.extraVolumeMounts }}
               {{ toYaml .Values.extraVolumeMounts | nindent 12}}
